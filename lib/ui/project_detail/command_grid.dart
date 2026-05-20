@@ -78,10 +78,39 @@ class CommandGrid extends ConsumerWidget {
       cleanBeforeBuild: project.cleanBeforeBuild,
     );
     final controller = ref.read(projectRunnerProvider(project.id));
+    // Clear previous output file so button disappears until next success
+    controller.setLastOutputFile(null);
     controller.start(
       label: composed.label,
       command: composed.shell,
       workingDir: project.path,
+      onComplete: (code, duration) async {
+        if (code == 0 && intent is BuildApkIntent) {
+          final apk =
+              await ref.read(outputFinderProvider).findApk(project.path);
+          if (apk == null) {
+            // Couldn't find APK — just open the build folder
+            await ref
+                .read(finderRevealProvider)
+                .openFolder('${project.path}/build');
+            return;
+          }
+          try {
+            final result = await ref.read(outputRenamerProvider).rename(
+                  sourceApk: apk,
+                  projectPath: project.path,
+                );
+            controller.setLastOutputFile(result.target);
+            await ref
+                .read(finderRevealProvider)
+                .reveal(result.target.path);
+          } catch (_) {
+            await ref
+                .read(finderRevealProvider)
+                .openFolder('${project.path}/build');
+          }
+        }
+      },
     );
   }
 

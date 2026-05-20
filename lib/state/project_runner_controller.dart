@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:typed_data';
 
 import '../domain/services/command_runner.dart';
@@ -30,6 +31,7 @@ class ProjectRunnerController {
   RunnerState _state = RunnerState.idle;
   int? _lastExitCode;
   Duration? _lastDuration;
+  File? _lastOutputFile;
 
   Stream<RunnerState> get stream => _stateCtrl.stream;
   Stream<Uint8List> get output => _outputCtrl.stream;
@@ -38,6 +40,12 @@ class ProjectRunnerController {
   RunningInfo? get current => _current;
   int? get lastExitCode => _lastExitCode;
   Duration? get lastDuration => _lastDuration;
+  File? get lastOutputFile => _lastOutputFile;
+
+  void setLastOutputFile(File? f) {
+    _lastOutputFile = f;
+    _setState(_state); // notify listeners so terminal panel refreshes
+  }
 
   void start({
     required String label,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../domain/models/project.dart';
 import 'command_grid.dart';
+import 'terminal_panel.dart';
 import 'toolbar.dart';
 
 class ProjectDetail extends StatelessWidget {
@@ -20,7 +21,7 @@ class ProjectDetail extends StatelessWidget {
         const Divider(height: 1),
         CommandGrid(project: project),
         const Divider(height: 1),
-        const Expanded(child: Placeholder()), // terminal panel in Task 26
+        Expanded(child: TerminalPanel(project: project)),
       ],
     );
   }
