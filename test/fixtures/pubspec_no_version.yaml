@@ -1,0 +1,4 @@
+name: another_app
+description: No version.
+environment:
+  sdk: '>=3.0.0 <4.0.0'
