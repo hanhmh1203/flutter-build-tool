@@ -15,6 +15,7 @@ class Project extends HiveObject {
     this.cleanBeforeBuild = false,
     List<CustomCommand>? customCommands,
     this.lastOpenedAt,
+    this.lastEntryPoint,
   }) : customCommands = customCommands ?? <CustomCommand>[];
 
   @HiveField(0)
@@ -35,4 +36,8 @@ class Project extends HiveObject {
   DateTime addedAt;
   @HiveField(8)
   DateTime? lastOpenedAt;
+  /// Relative path of the Flutter entry-point file, e.g. "lib/main_nightly.dart".
+  /// null means use Flutter's default (lib/main.dart).
+  @HiveField(9)
+  String? lastEntryPoint;
 }

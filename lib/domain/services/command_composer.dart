@@ -12,21 +12,24 @@ class CommandComposer {
   ComposedCommand compose(CommandIntent intent,
       {required bool cleanBeforeBuild}) {
     return switch (intent) {
-      RunIntent(deviceId: final d, flavor: final f) => ComposedCommand(
+      RunIntent(deviceId: final d, flavor: final f, entryPoint: final e) =>
+        ComposedCommand(
           label: f == null ? 'Run' : 'Run ($f)',
           shell: _join([
             'flutter run',
-            '-d ${_q(d)}',
+            if (d.isNotEmpty) '-d ${_q(d)}',
             if (f != null) '--flavor ${_q(f)}',
+            if (e != null && e != 'lib/main.dart') '--target ${_q(e)}',
           ]),
         ),
-      BuildApkIntent(flavor: final f) => ComposedCommand(
+      BuildApkIntent(flavor: final f, entryPoint: final e) => ComposedCommand(
           label: f == null ? 'Build APK' : 'Build APK ($f)',
           shell: _withCleanPrefix(
             cleanBeforeBuild,
             _join([
               'flutter build apk --release',
               if (f != null) '--flavor ${_q(f)}',
+              if (e != null && e != 'lib/main.dart') '--target ${_q(e)}',
             ]),
           ),
         ),

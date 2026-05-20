@@ -9,6 +9,7 @@ import '../domain/models/project.dart';
 import '../domain/services/command_composer.dart';
 import '../domain/services/command_runner.dart';
 import '../domain/services/device_lister.dart';
+import '../domain/services/entry_point_detector.dart';
 import '../domain/services/finder_reveal.dart';
 import '../domain/services/flavor_detector.dart';
 import '../domain/services/flutter_sdk_checker.dart';
@@ -46,6 +47,8 @@ final outputRenamerProvider =
     Provider<OutputRenamer>((_) => const OutputRenamer());
 final projectImporterProvider =
     Provider<ProjectImporter>((_) => const ProjectImporter());
+final entryPointDetectorProvider =
+    Provider<EntryPointDetector>((_) => const EntryPointDetector());
 final finderRevealProvider =
     Provider<FinderReveal>((_) => const FinderReveal());
 final sdkCheckerProvider =
@@ -89,6 +92,11 @@ final flavorsForProjectProvider =
   return ref.watch(flavorDetectorProvider).detect(projectPath);
 });
 
+final entryPointsForProjectProvider =
+    FutureProvider.family<List<String>, String>((ref, projectPath) {
+  return ref.watch(entryPointDetectorProvider).detect(projectPath);
+});
+
 final devicesProvider = FutureProvider<List<FlutterDevice>>((ref) {
   return ref.watch(deviceListerProvider).list();
 });
@@ -105,6 +113,30 @@ final projectRunnerProvider =
 final sdkStatusProvider = FutureProvider((ref) {
   return ref.watch(sdkCheckerProvider).check();
 });
+
+/// Per-project "clean before build" toggle — reactive so toolbar rebuilds instantly.
+final selectedCleanProvider = StateProvider.family<bool, String>(
+  (ref, projectId) {
+    final projects = ref.read(projectsProvider);
+    try {
+      return projects.firstWhere((p) => p.id == projectId).cleanBeforeBuild;
+    } catch (_) {
+      return false;
+    }
+  },
+);
+
+/// Per-project selected entry-point file — reactive StateProvider.
+final selectedEntryPointProvider = StateProvider.family<String?, String>(
+  (ref, projectId) {
+    final projects = ref.read(projectsProvider);
+    try {
+      return projects.firstWhere((p) => p.id == projectId).lastEntryPoint;
+    } catch (_) {
+      return null; // null = lib/main.dart (Flutter default)
+    }
+  },
+);
 
 /// Per-project selected device id — reactive StateProvider so toolbar rebuilds
 /// immediately when user picks a device. Initialised from Hive-persisted value.

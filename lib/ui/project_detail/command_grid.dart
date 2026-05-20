@@ -15,9 +15,11 @@ class CommandGrid extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final controller = ref.watch(projectRunnerProvider(project.id));
-    // Read reactive selections so commands always use the current device/flavor.
+    // Read all reactive selections so commands always use current values.
     final selectedDevice = ref.watch(selectedDeviceIdProvider(project.id));
     final selectedFlavor = ref.watch(selectedFlavorProvider(project.id));
+    final selectedEntry = ref.watch(selectedEntryPointProvider(project.id));
+    final cleanBefore = ref.watch(selectedCleanProvider(project.id));
     return StreamBuilder(
       stream: controller.stream,
       builder: (_, __) {
@@ -34,13 +36,17 @@ class CommandGrid extends ConsumerWidget {
                   _btn('▶ Run', !running, () => _run(ref, RunIntent(
                     deviceId: selectedDevice ?? '',
                     flavor: selectedFlavor,
-                  ))),
+                    entryPoint: selectedEntry,
+                  ), cleanBefore: cleanBefore)),
                   _btn('🧹 Clean + Pub', !running,
-                      () => _run(ref, const CleanIntent())),
+                      () => _run(ref, const CleanIntent(), cleanBefore: false)),
                   _btn('Build APK', !running,
-                      () => _run(ref, BuildApkIntent(flavor: selectedFlavor))),
+                      () => _run(ref, BuildApkIntent(
+                        flavor: selectedFlavor,
+                        entryPoint: selectedEntry,
+                      ), cleanBefore: cleanBefore)),
                   _btn('⚙️ build_runner', !running,
-                      () => _run(ref, const BuildRunnerIntent())),
+                      () => _run(ref, const BuildRunnerIntent(), cleanBefore: false)),
                 ],
               ),
               const SizedBox(height: 12),
@@ -53,7 +59,7 @@ class CommandGrid extends ConsumerWidget {
                 children: [
                   for (final c in project.customCommands)
                     _btn(c.label, !running,
-                        () => _run(ref, CustomIntent(label: c.label, command: c.command))),
+                        () => _run(ref, CustomIntent(label: c.label, command: c.command), cleanBefore: false)),
                   OutlinedButton.icon(
                     onPressed: () => _editCustom(context, ref, null),
                     icon: const Icon(Icons.add),
@@ -75,10 +81,10 @@ class CommandGrid extends ConsumerWidget {
     );
   }
 
-  void _run(WidgetRef ref, CommandIntent intent) {
+  void _run(WidgetRef ref, CommandIntent intent, {required bool cleanBefore}) {
     final composed = ref.read(commandComposerProvider).compose(
       intent,
-      cleanBeforeBuild: project.cleanBeforeBuild,
+      cleanBeforeBuild: cleanBefore,
     );
     final controller = ref.read(projectRunnerProvider(project.id));
     // Clear previous output file so button disappears until next success

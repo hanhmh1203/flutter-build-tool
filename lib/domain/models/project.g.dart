@@ -26,13 +26,14 @@ class ProjectAdapter extends TypeAdapter<Project> {
       cleanBeforeBuild: fields[5] as bool,
       customCommands: (fields[6] as List?)?.cast<CustomCommand>(),
       lastOpenedAt: fields[8] as DateTime?,
+      lastEntryPoint: fields[9] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, Project obj) {
     writer
-      ..writeByte(9)
+      ..writeByte(10)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -50,7 +51,9 @@ class ProjectAdapter extends TypeAdapter<Project> {
       ..writeByte(7)
       ..write(obj.addedAt)
       ..writeByte(8)
-      ..write(obj.lastOpenedAt);
+      ..write(obj.lastOpenedAt)
+      ..writeByte(9)
+      ..write(obj.lastEntryPoint);
   }
 
   @override

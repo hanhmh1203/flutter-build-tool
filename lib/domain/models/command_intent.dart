@@ -3,14 +3,18 @@ sealed class CommandIntent {
 }
 
 class RunIntent extends CommandIntent {
-  const RunIntent({required this.deviceId, required this.flavor});
+  const RunIntent({required this.deviceId, this.flavor, this.entryPoint});
   final String deviceId;
   final String? flavor;
+  /// Relative entry-point path, e.g. "lib/main_nightly.dart".
+  /// null means use Flutter default (lib/main.dart).
+  final String? entryPoint;
 }
 
 class BuildApkIntent extends CommandIntent {
-  const BuildApkIntent({required this.flavor});
+  const BuildApkIntent({this.flavor, this.entryPoint});
   final String? flavor;
+  final String? entryPoint;
 }
 
 class CleanIntent extends CommandIntent {
