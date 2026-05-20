@@ -6,6 +6,7 @@ class RunIntent extends CommandIntent {
   const RunIntent({required this.deviceId, this.flavor, this.entryPoint});
   final String deviceId;
   final String? flavor;
+
   /// Relative entry-point path, e.g. "lib/main_nightly.dart".
   /// null means use Flutter default (lib/main.dart).
   final String? entryPoint;
@@ -13,6 +14,18 @@ class RunIntent extends CommandIntent {
 
 class BuildApkIntent extends CommandIntent {
   const BuildApkIntent({this.flavor, this.entryPoint});
+  final String? flavor;
+  final String? entryPoint;
+}
+
+class BuildAabIntent extends CommandIntent {
+  const BuildAabIntent({this.flavor, this.entryPoint});
+  final String? flavor;
+  final String? entryPoint;
+}
+
+class BuildIpaIntent extends CommandIntent {
+  const BuildIpaIntent({this.flavor, this.entryPoint});
   final String? flavor;
   final String? entryPoint;
 }
@@ -29,4 +42,10 @@ class CustomIntent extends CommandIntent {
   const CustomIntent({required this.label, required this.command});
   final String label;
   final String command;
+}
+
+class ScriptIntent extends CommandIntent {
+  const ScriptIntent({required this.label, required this.scriptPath});
+  final String label;
+  final String scriptPath;
 }

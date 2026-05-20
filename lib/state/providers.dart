@@ -15,6 +15,7 @@ import '../domain/services/flavor_detector.dart';
 import '../domain/services/flutter_sdk_checker.dart';
 import '../domain/services/output_finder.dart';
 import '../domain/services/output_renamer.dart';
+import '../domain/services/script_detector.dart';
 import 'project_runner_controller.dart';
 import '../domain/services/project_importer.dart';
 
@@ -53,6 +54,16 @@ final finderRevealProvider =
     Provider<FinderReveal>((_) => const FinderReveal());
 final sdkCheckerProvider =
     Provider<FlutterSdkChecker>((_) => const FlutterSdkChecker());
+
+/// ScriptDetector for shell script discovery
+final scriptDetectorProvider =
+    Provider<ScriptDetector>((_) => const ScriptDetector());
+
+/// Scripts for a given project path
+final scriptsForProjectProvider =
+    FutureProvider.family<List<ShScript>, String>((ref, projectPath) {
+  return ref.watch(scriptDetectorProvider).detect(projectPath);
+});
 
 /// Reactive list of projects. Notifier-driven so UI updates after add/remove.
 final projectsProvider =

@@ -33,6 +33,28 @@ class CommandComposer {
             ]),
           ),
         ),
+      BuildAabIntent(flavor: final f, entryPoint: final e) => ComposedCommand(
+          label: f == null ? 'Build AAB' : 'Build AAB ($f)',
+          shell: _withCleanPrefix(
+            cleanBeforeBuild,
+            _join([
+              'flutter build appbundle --release',
+              if (f != null) '--flavor ${_q(f)}',
+              if (e != null && e != 'lib/main.dart') '--target ${_q(e)}',
+            ]),
+          ),
+        ),
+      BuildIpaIntent(flavor: final f, entryPoint: final e) => ComposedCommand(
+          label: f == null ? 'Build IPA' : 'Build IPA ($f)',
+          shell: _withCleanPrefix(
+            cleanBeforeBuild,
+            _join([
+              'flutter build ipa --release',
+              if (f != null) '--flavor ${_q(f)}',
+              if (e != null && e != 'lib/main.dart') '--target ${_q(e)}',
+            ]),
+          ),
+        ),
       CleanIntent() => const ComposedCommand(
           label: 'Clean + Pub get',
           shell: 'flutter clean && flutter pub get',
@@ -43,6 +65,8 @@ class CommandComposer {
         ),
       CustomIntent(label: final l, command: final c) =>
         ComposedCommand(label: l, shell: c),
+      ScriptIntent(label: final l, scriptPath: final sp) =>
+        ComposedCommand(label: l, shell: 'bash ${_q(sp)}'),
     };
   }
 
