@@ -23,7 +23,14 @@ class ProjectDetail extends StatelessWidget {
         const Divider(height: 1, color: AppColors.hairline),
         ProjectToolbar(project: project),
         const Divider(height: 1, color: AppColors.hairline),
-        CommandGrid(project: project),
+        // CommandGrid: constrained height + scrollable so terminal always
+        // gets space even with many scripts / custom commands.
+        ConstrainedBox(
+          constraints: const BoxConstraints(maxHeight: 320),
+          child: SingleChildScrollView(
+            child: CommandGrid(project: project),
+          ),
+        ),
         const Divider(height: 1, color: AppColors.hairline),
         Expanded(child: TerminalPanel(project: project)),
       ],
@@ -51,74 +58,84 @@ class _ProjectHeader extends ConsumerWidget {
         ? '${controller.lastDuration!.inSeconds}s ago'
         : '—';
 
-    return Container(
-      padding: const EdgeInsets.fromLTRB(24, 18, 24, 18),
-      decoration: const BoxDecoration(
-        color: AppColors.bg,
-        border: Border(
-          bottom: BorderSide(color: AppColors.hairline, width: 1),
-        ),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          // Left title block
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Eyebrow
-                Row(
-                  children: [
-                    Container(
-                      width: 5,
-                      height: 5,
-                      decoration: const BoxDecoration(
-                        color: AppColors.accent,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      'ACTIVE PROJECT',
-                      style: GoogleFonts.jetBrainsMono(
-                        fontSize: 10.5,
-                        color: AppColors.muted,
-                        letterSpacing: 0.14 * 10.5,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                // H1 with last char italic accent
-                _StyledProjectName(name: project.name),
-                // Path
-                const SizedBox(height: 8),
-                _StyledPath(path: project.path),
-              ],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final showStats = constraints.maxWidth >= 660;
+        final compact = constraints.maxWidth < 540;
+        return Container(
+          padding: EdgeInsets.fromLTRB(
+              compact ? 16 : 24, 18, compact ? 16 : 24, 18),
+          decoration: const BoxDecoration(
+            color: AppColors.bg,
+            border: Border(
+              bottom: BorderSide(color: AppColors.hairline, width: 1),
             ),
           ),
-          const SizedBox(width: 18),
-          // Right stats block
-          Row(
+          child: Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              _StatCell(label: 'LAST BUILD', value: lastBuild),
-              const SizedBox(width: 18),
-              _StatCell(label: 'SIZE', value: '—'),
-              const SizedBox(width: 18),
-              _StatCell(label: 'FLUTTER', value: sdkVersion),
+              // Left title block
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Eyebrow
+                    Row(
+                      children: [
+                        Container(
+                          width: 5,
+                          height: 5,
+                          decoration: const BoxDecoration(
+                            color: AppColors.accent,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          'ACTIVE PROJECT',
+                          style: GoogleFonts.jetBrainsMono(
+                            fontSize: 10.5,
+                            color: AppColors.muted,
+                            letterSpacing: 0.14 * 10.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    // H1 — smaller on compact widths
+                    _StyledProjectName(
+                        name: project.name, fontSize: compact ? 24 : 34),
+                    const SizedBox(height: 8),
+                    _StyledPath(path: project.path),
+                  ],
+                ),
+              ),
+              // Right stats — hidden on narrow windows
+              if (showStats) ...[
+                const SizedBox(width: 18),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    _StatCell(label: 'LAST BUILD', value: lastBuild),
+                    const SizedBox(width: 18),
+                    _StatCell(label: 'SIZE', value: '—'),
+                    const SizedBox(width: 18),
+                    _StatCell(label: 'FLUTTER', value: sdkVersion),
+                  ],
+                ),
+              ],
             ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
 
 class _StyledProjectName extends StatelessWidget {
-  const _StyledProjectName({required this.name});
+  const _StyledProjectName({required this.name, this.fontSize = 34});
   final String name;
+  final double fontSize;
 
   @override
   Widget build(BuildContext context) {
@@ -126,10 +143,10 @@ class _StyledProjectName extends StatelessWidget {
       return Text(
         name,
         style: GoogleFonts.sourceSerif4(
-          fontSize: 34,
+          fontSize: fontSize,
           fontWeight: FontWeight.w500,
           color: AppColors.text,
-          letterSpacing: -0.025 * 34,
+          letterSpacing: -0.025 * fontSize,
         ),
       );
     }
@@ -142,20 +159,20 @@ class _StyledProjectName extends StatelessWidget {
           TextSpan(
             text: mainPart,
             style: GoogleFonts.sourceSerif4(
-              fontSize: 34,
+              fontSize: fontSize,
               fontWeight: FontWeight.w500,
               color: AppColors.text,
-              letterSpacing: -0.025 * 34,
+              letterSpacing: -0.025 * fontSize,
             ),
           ),
           TextSpan(
             text: lastChar,
             style: GoogleFonts.sourceSerif4(
-              fontSize: 34,
+              fontSize: fontSize,
               fontWeight: FontWeight.w500,
               color: AppColors.accent,
               fontStyle: FontStyle.italic,
-              letterSpacing: -0.025 * 34,
+              letterSpacing: -0.025 * fontSize,
             ),
           ),
         ],

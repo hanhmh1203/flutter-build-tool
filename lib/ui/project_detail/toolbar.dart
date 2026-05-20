@@ -22,84 +22,102 @@ class ProjectToolbar extends ConsumerWidget {
     final selectedEntry = ref.watch(selectedEntryPointProvider(project.id));
     final cleanBefore = ref.watch(selectedCleanProvider(project.id));
 
+    // Build the 4 field widgets once; reused in both layout modes.
+    final entryField = _UnderlineSelect(
+      label: 'ENTRY',
+      value: selectedEntry,
+      hint: 'main.dart',
+      items: _entryItems(entryPoints),
+      onChanged: (v) {
+        ref.read(selectedEntryPointProvider(project.id).notifier).state = v;
+        project.lastEntryPoint = v;
+        ref.read(projectsProvider.notifier).update(project);
+      },
+    );
+    final flavorField = _UnderlineSelect(
+      label: 'FLAVOR',
+      value: selectedFlavor,
+      hint: '(default)',
+      items: _flavorItems(flavors),
+      onChanged: (v) {
+        ref.read(selectedFlavorProvider(project.id).notifier).state = v;
+        project.lastFlavor = v;
+        ref.read(projectsProvider.notifier).update(project);
+      },
+    );
+    final deviceField = _DeviceSelect(
+      selectedDevice: selectedDevice,
+      devices: devices,
+      onChanged: (v) {
+        ref.read(selectedDeviceIdProvider(project.id).notifier).state = v;
+        project.lastDeviceId = v;
+        ref.read(projectsProvider.notifier).update(project);
+      },
+    );
+    final toggleField = _CleanToggle(
+      value: cleanBefore,
+      onChanged: (val) {
+        ref.read(selectedCleanProvider(project.id).notifier).state = val;
+        project.cleanBeforeBuild = val;
+        ref.read(projectsProvider.notifier).update(project);
+      },
+    );
+    final refreshBtn = _RefreshButton(
+      onPressed: () {
+        ref.invalidate(devicesProvider);
+        ref.invalidate(flavorsForProjectProvider(project.path));
+        ref.invalidate(entryPointsForProjectProvider(project.path));
+      },
+    );
+
     return Container(
-      padding: const EdgeInsets.fromLTRB(24, 14, 24, 14),
       decoration: const BoxDecoration(
         color: AppColors.bg,
-        border: Border(
-          bottom: BorderSide(color: AppColors.hairline),
-        ),
+        border: Border(bottom: BorderSide(color: AppColors.hairline)),
       ),
-      child: Row(
-        children: [
-          // Entry point
-          Expanded(
-            child: _UnderlineSelect(
-              label: 'ENTRY',
-              value: selectedEntry,
-              hint: 'main.dart',
-              items: _entryItems(entryPoints),
-              onChanged: (v) {
-                ref
-                    .read(selectedEntryPointProvider(project.id).notifier)
-                    .state = v;
-                project.lastEntryPoint = v;
-                ref.read(projectsProvider.notifier).update(project);
-              },
-            ),
-          ),
-          const SizedBox(width: 20),
-          // Flavor
-          Expanded(
-            child: _UnderlineSelect(
-              label: 'FLAVOR',
-              value: selectedFlavor,
-              hint: '(default)',
-              items: _flavorItems(flavors),
-              onChanged: (v) {
-                ref
-                    .read(selectedFlavorProvider(project.id).notifier)
-                    .state = v;
-                project.lastFlavor = v;
-                ref.read(projectsProvider.notifier).update(project);
-              },
-            ),
-          ),
-          const SizedBox(width: 20),
-          // Device
-          Expanded(
-            child: _DeviceSelect(
-              selectedDevice: selectedDevice,
-              devices: devices,
-              onChanged: (v) {
-                ref
-                    .read(selectedDeviceIdProvider(project.id).notifier)
-                    .state = v;
-                project.lastDeviceId = v;
-                ref.read(projectsProvider.notifier).update(project);
-              },
-            ),
-          ),
-          const SizedBox(width: 24),
-          // Toggle
-          _CleanToggle(
-            value: cleanBefore,
-            onChanged: (val) {
-              ref.read(selectedCleanProvider(project.id).notifier).state = val;
-              project.cleanBeforeBuild = val;
-              ref.read(projectsProvider.notifier).update(project);
-            },
-          ),
-          const SizedBox(width: 12),
-          // Refresh
-          _RefreshButton(
-            onPressed: () {
-              ref.invalidate(devicesProvider);
-              ref.invalidate(flavorsForProjectProvider(project.path));
-              ref.invalidate(entryPointsForProjectProvider(project.path));
-            },
-          ),
-        ],
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          // Wide: single Row with Expanded fields.
+          // Narrow (< 620px): Wrap, each field gets a fixed width.
+          if (constraints.maxWidth >= 620) {
+            return Padding(
+              padding: const EdgeInsets.fromLTRB(24, 14, 24, 14),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Expanded(child: entryField),
+                  const SizedBox(width: 20),
+                  Expanded(child: flavorField),
+                  const SizedBox(width: 20),
+                  Expanded(child: deviceField),
+                  const SizedBox(width: 24),
+                  toggleField,
+                  const SizedBox(width: 12),
+                  refreshBtn,
+                ],
+              ),
+            );
+          } else {
+            // Narrow: Wrap with fixed-width SizedBox per field.
+            final fieldW = ((constraints.maxWidth - 48 - 16) / 2)
+                .clamp(120.0, 300.0);
+            return Padding(
+              padding: const EdgeInsets.fromLTRB(24, 12, 24, 12),
+              child: Wrap(
+                spacing: 16,
+                runSpacing: 12,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  SizedBox(width: fieldW, child: entryField),
+                  SizedBox(width: fieldW, child: flavorField),
+                  SizedBox(width: fieldW, child: deviceField),
+                  toggleField,
+                  refreshBtn,
+                ],
+              ),
+            );
+          }
+        },
       ),
     );
   }

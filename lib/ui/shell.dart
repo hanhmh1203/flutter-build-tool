@@ -7,11 +7,20 @@ import '../state/providers.dart';
 import 'project_detail/project_detail.dart';
 import 'sidebar/sidebar.dart';
 
-class Shell extends ConsumerWidget {
+class Shell extends ConsumerStatefulWidget {
   const Shell({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<Shell> createState() => _ShellState();
+}
+
+class _ShellState extends ConsumerState<Shell> {
+  double _sidebarWidth = 260;
+  static const double _minSidebarWidth = 180.0;
+  static const double _maxSidebarWidth = 420.0;
+
+  @override
+  Widget build(BuildContext context) {
     final selected = ref.watch(selectedProjectProvider);
     final sdk = ref.watch(sdkStatusProvider);
 
@@ -24,7 +33,26 @@ class Shell extends ConsumerWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const SizedBox(width: 260, child: Sidebar()),
+                // Resizable sidebar
+                SizedBox(width: _sidebarWidth, child: const Sidebar()),
+                // Drag handle — 1px hairline + transparent hit area
+                MouseRegion(
+                  cursor: SystemMouseCursors.resizeColumn,
+                  child: GestureDetector(
+                    onHorizontalDragUpdate: (d) => setState(() {
+                      _sidebarWidth = (_sidebarWidth + d.delta.dx)
+                          .clamp(_minSidebarWidth, _maxSidebarWidth);
+                    }),
+                    child: Container(
+                      width: 5,
+                      color: Colors.transparent,
+                      child: Center(
+                        child: Container(width: 1, color: AppColors.hairline),
+                      ),
+                    ),
+                  ),
+                ),
+                // Main content
                 Expanded(
                   child: selected == null
                       ? const _EmptyState()

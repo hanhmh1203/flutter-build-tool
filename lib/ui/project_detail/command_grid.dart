@@ -36,10 +36,12 @@ class CommandGrid extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Primary and secondary action buttons
-              Row(
+              // Primary and secondary action buttons — wrap on narrow windows
+              Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
-                  // Primary Run button
                   _RunButton(
                     running: running,
                     onTap: () => _run(
@@ -53,16 +55,13 @@ class CommandGrid extends ConsumerWidget {
                     ),
                     onStop: controller.stop,
                   ),
-                  const SizedBox(width: 8),
-                  // Secondary buttons
                   _SecondaryButton(
                     icon: Icons.auto_fix_high,
                     label: 'Clean + Pub',
                     enabled: !running,
-                    onTap: () => _run(ref, const CleanIntent(),
-                        cleanBefore: false),
+                    onTap: () =>
+                        _run(ref, const CleanIntent(), cleanBefore: false),
                   ),
-                  const SizedBox(width: 6),
                   _SecondaryButton(
                     icon: Icons.settings_outlined,
                     label: 'build_runner',
@@ -70,12 +69,11 @@ class CommandGrid extends ConsumerWidget {
                     onTap: () => _run(ref, const BuildRunnerIntent(),
                         cleanBefore: false),
                   ),
-                  // Vertical separator
-                  Container(
-                    height: 24,
-                    width: 1,
-                    margin: const EdgeInsets.symmetric(horizontal: 8),
-                    color: AppColors.border,
+                  // Thin visual separator (treated as a zero-size spacer in Wrap)
+                  SizedBox(
+                    height: 28,
+                    child: VerticalDivider(
+                        width: 17, color: AppColors.border, thickness: 1),
                   ),
                   _SecondaryButton(
                     icon: Icons.android,
@@ -88,7 +86,6 @@ class CommandGrid extends ConsumerWidget {
                       cleanBefore: cleanBefore,
                     ),
                   ),
-                  const SizedBox(width: 6),
                   _SecondaryButton(
                     icon: Icons.inventory_2_outlined,
                     label: 'AAB',
@@ -100,7 +97,6 @@ class CommandGrid extends ConsumerWidget {
                       cleanBefore: cleanBefore,
                     ),
                   ),
-                  const SizedBox(width: 6),
                   _SecondaryButton(
                     icon: Icons.apple,
                     label: 'IPA',
