@@ -12,9 +12,13 @@ class FlutterSdkChecker {
 
   Future<SdkStatus> check({String executable = 'flutter'}) async {
     try {
-      final result = await Process.run(executable, ['--version'],
-              runInShell: true)
-          .timeout(const Duration(seconds: 10));
+      // Use login shell so PATH from ~/.zprofile / ~/.zshrc is inherited.
+      // Plain `Process.run('flutter', ...)` uses /bin/sh which misses user PATH
+      // in macOS GUI apps.
+      final result = await Process.run(
+        '/bin/zsh',
+        ['-l', '-c', '$executable --version'],
+      ).timeout(const Duration(seconds: 10));
       if (result.exitCode != 0) {
         return SdkStatus(available: false, error: result.stderr.toString());
       }
