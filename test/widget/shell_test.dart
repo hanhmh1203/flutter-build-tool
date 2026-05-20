@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:build_tool/data/app_paths.dart';
 import 'package:build_tool/data/hive_setup.dart';
+import 'package:build_tool/domain/services/flutter_sdk_checker.dart';
 import 'package:build_tool/state/providers.dart';
 import 'package:build_tool/ui/shell.dart';
 import 'package:flutter/material.dart';
@@ -32,6 +33,9 @@ void main() {
       overrides: [
         appPathsProvider.overrideWithValue(paths),
         hiveBoxesProvider.overrideWithValue(boxes),
+        // Override SDK check so no real Process.run timer is pending in tests
+        sdkStatusProvider.overrideWith(
+            (_) async => const SdkStatus(available: true)),
       ],
       child: const MaterialApp(home: Shell()),
     ));

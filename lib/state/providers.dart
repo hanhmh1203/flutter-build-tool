@@ -101,3 +101,7 @@ final projectRunnerProvider =
   ref.onDispose(controller.dispose);
   return controller;
 });
+
+final sdkStatusProvider = FutureProvider((ref) {
+  return ref.watch(sdkCheckerProvider).check();
+});

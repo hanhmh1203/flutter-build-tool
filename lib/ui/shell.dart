@@ -11,15 +11,46 @@ class Shell extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final selected = ref.watch(selectedProjectProvider);
+    final sdk = ref.watch(sdkStatusProvider);
     return Scaffold(
-      body: Row(
+      body: Column(
         children: [
-          const SizedBox(width: 260, child: Sidebar()),
-          const VerticalDivider(width: 1),
+          sdk.when(
+            data: (s) => s.available
+                ? const SizedBox.shrink()
+                : Container(
+                    color: Colors.redAccent,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 6),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.error, size: 18),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Flutter SDK not found in PATH — install Flutter '
+                            'and ensure `flutter` is on your shell PATH.'
+                            '${s.error == null ? '' : '\n${s.error}'}',
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+            loading: () => const SizedBox.shrink(),
+            error: (_, __) => const SizedBox.shrink(),
+          ),
           Expanded(
-            child: selected == null
-                ? const _EmptyState()
-                : ProjectDetail(project: selected),
+            child: Row(
+              children: [
+                const SizedBox(width: 260, child: Sidebar()),
+                const VerticalDivider(width: 1),
+                Expanded(
+                  child: selected == null
+                      ? const _EmptyState()
+                      : ProjectDetail(project: selected),
+                ),
+              ],
+            ),
           ),
         ],
       ),
