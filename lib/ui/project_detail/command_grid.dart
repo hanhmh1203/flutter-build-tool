@@ -15,6 +15,9 @@ class CommandGrid extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final controller = ref.watch(projectRunnerProvider(project.id));
+    // Read reactive selections so commands always use the current device/flavor.
+    final selectedDevice = ref.watch(selectedDeviceIdProvider(project.id));
+    final selectedFlavor = ref.watch(selectedFlavorProvider(project.id));
     return StreamBuilder(
       stream: controller.stream,
       builder: (_, __) {
@@ -29,13 +32,13 @@ class CommandGrid extends ConsumerWidget {
                 runSpacing: 8,
                 children: [
                   _btn('▶ Run', !running, () => _run(ref, RunIntent(
-                    deviceId: project.lastDeviceId ?? '',
-                    flavor: project.lastFlavor,
+                    deviceId: selectedDevice ?? '',
+                    flavor: selectedFlavor,
                   ))),
                   _btn('🧹 Clean + Pub', !running,
                       () => _run(ref, const CleanIntent())),
                   _btn('Build APK', !running,
-                      () => _run(ref, BuildApkIntent(flavor: project.lastFlavor))),
+                      () => _run(ref, BuildApkIntent(flavor: selectedFlavor))),
                   _btn('⚙️ build_runner', !running,
                       () => _run(ref, const BuildRunnerIntent())),
                 ],

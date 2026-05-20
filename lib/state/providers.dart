@@ -105,3 +105,29 @@ final projectRunnerProvider =
 final sdkStatusProvider = FutureProvider((ref) {
   return ref.watch(sdkCheckerProvider).check();
 });
+
+/// Per-project selected device id — reactive StateProvider so toolbar rebuilds
+/// immediately when user picks a device. Initialised from Hive-persisted value.
+final selectedDeviceIdProvider = StateProvider.family<String?, String>(
+  (ref, projectId) {
+    final projects = ref.read(projectsProvider);
+    try {
+      return projects.firstWhere((p) => p.id == projectId).lastDeviceId;
+    } catch (_) {
+      return null;
+    }
+  },
+);
+
+/// Per-project selected flavor — reactive StateProvider so toolbar rebuilds
+/// immediately when user picks a flavor. Initialised from Hive-persisted value.
+final selectedFlavorProvider = StateProvider.family<String?, String>(
+  (ref, projectId) {
+    final projects = ref.read(projectsProvider);
+    try {
+      return projects.firstWhere((p) => p.id == projectId).lastFlavor;
+    } catch (_) {
+      return null;
+    }
+  },
+);
