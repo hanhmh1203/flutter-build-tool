@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+
 import '../../domain/models/project.dart';
+import 'toolbar.dart';
 
 class ProjectDetail extends StatelessWidget {
   const ProjectDetail({super.key, required this.project});
@@ -7,5 +9,39 @@ class ProjectDetail extends StatelessWidget {
   final Project project;
 
   @override
-  Widget build(BuildContext context) => Center(child: Text(project.name));
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _Header(project: project),
+        const Divider(height: 1),
+        ProjectToolbar(project: project),
+        const Divider(height: 1),
+        const Expanded(child: Placeholder()), // command grid + terminal (Tasks 24 & 26)
+      ],
+    );
+  }
+}
+
+class _Header extends StatelessWidget {
+  const _Header({required this.project});
+
+  final Project project;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(project.name,
+              style: const TextStyle(
+                  fontSize: 22, fontWeight: FontWeight.w600)),
+          Text(project.path,
+              style: const TextStyle(color: Colors.grey, fontSize: 12)),
+        ],
+      ),
+    );
+  }
 }

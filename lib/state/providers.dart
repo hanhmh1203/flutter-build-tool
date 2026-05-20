@@ -4,6 +4,7 @@ import '../data/app_paths.dart';
 import '../data/hive_setup.dart';
 import '../data/repositories/build_log_repository.dart';
 import '../data/repositories/project_repository.dart';
+import '../domain/models/flutter_device.dart';
 import '../domain/models/project.dart';
 import '../domain/services/command_composer.dart';
 import '../domain/services/command_runner.dart';
@@ -13,6 +14,7 @@ import '../domain/services/flavor_detector.dart';
 import '../domain/services/flutter_sdk_checker.dart';
 import '../domain/services/output_finder.dart';
 import '../domain/services/output_renamer.dart';
+import 'project_runner_controller.dart';
 import '../domain/services/project_importer.dart';
 
 final appPathsProvider = Provider<AppPaths>((_) {
@@ -80,4 +82,22 @@ final selectedProjectProvider = Provider<Project?>((ref) {
   final id = ref.watch(selectedProjectIdProvider);
   if (id == null) return null;
   return ref.watch(projectsProvider).where((p) => p.id == id).firstOrNull;
+});
+
+final flavorsForProjectProvider =
+    FutureProvider.family<List<String>, String>((ref, projectPath) {
+  return ref.watch(flavorDetectorProvider).detect(projectPath);
+});
+
+final devicesProvider = FutureProvider<List<FlutterDevice>>((ref) {
+  return ref.watch(deviceListerProvider).list();
+});
+
+final projectRunnerProvider =
+    Provider.family<ProjectRunnerController, String>((ref, projectId) {
+  final controller = ProjectRunnerController(
+    runner: ref.watch(commandRunnerProvider),
+  );
+  ref.onDispose(controller.dispose);
+  return controller;
 });
