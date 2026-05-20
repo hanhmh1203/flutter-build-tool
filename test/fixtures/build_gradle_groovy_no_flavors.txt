@@ -1,0 +1,4 @@
+android {
+    compileSdkVersion 34
+    defaultConfig { applicationId "com.example.app" }
+}

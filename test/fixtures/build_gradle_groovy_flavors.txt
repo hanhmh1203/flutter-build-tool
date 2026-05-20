@@ -1,0 +1,16 @@
+android {
+    compileSdkVersion 34
+    flavorDimensions "env"
+    productFlavors {
+        dev {
+            dimension "env"
+            applicationIdSuffix ".dev"
+        }
+        staging {
+            dimension "env"
+        }
+        prod {
+            dimension "env"
+        }
+    }
+}
