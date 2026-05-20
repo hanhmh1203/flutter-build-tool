@@ -16,7 +16,7 @@ import 'package:hive/hive.dart';
 class FakeDevices extends DeviceLister {
   const FakeDevices();
   @override
-  Future<List<FlutterDevice>> list() async => const [
+  Future<List<FlutterDevice>> list({String flutterPath = 'flutter'}) async => const [
         FlutterDevice(
             id: 'macos',
             name: 'macOS',

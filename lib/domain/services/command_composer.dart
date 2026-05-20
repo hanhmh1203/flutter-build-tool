@@ -9,14 +9,18 @@ class ComposedCommand {
 class CommandComposer {
   const CommandComposer();
 
-  ComposedCommand compose(CommandIntent intent,
-      {required bool cleanBeforeBuild}) {
+  ComposedCommand compose(
+    CommandIntent intent, {
+    required bool cleanBeforeBuild,
+    String flutterPath = 'flutter',
+  }) {
+    final fl = flutterPath;
     return switch (intent) {
       RunIntent(deviceId: final d, flavor: final f, entryPoint: final e) =>
         ComposedCommand(
           label: f == null ? 'Run' : 'Run ($f)',
           shell: _join([
-            'flutter run',
+            '$fl run',
             if (d.isNotEmpty) '-d ${_q(d)}',
             if (f != null) '--flavor ${_q(f)}',
             if (e != null && e != 'lib/main.dart') '--target ${_q(e)}',
@@ -27,10 +31,11 @@ class CommandComposer {
           shell: _withCleanPrefix(
             cleanBeforeBuild,
             _join([
-              'flutter build apk --release',
+              '$fl build apk --release',
               if (f != null) '--flavor ${_q(f)}',
               if (e != null && e != 'lib/main.dart') '--target ${_q(e)}',
             ]),
+            fl: fl,
           ),
         ),
       BuildAabIntent(flavor: final f, entryPoint: final e) => ComposedCommand(
@@ -38,10 +43,11 @@ class CommandComposer {
           shell: _withCleanPrefix(
             cleanBeforeBuild,
             _join([
-              'flutter build appbundle --release',
+              '$fl build appbundle --release',
               if (f != null) '--flavor ${_q(f)}',
               if (e != null && e != 'lib/main.dart') '--target ${_q(e)}',
             ]),
+            fl: fl,
           ),
         ),
       BuildIpaIntent(flavor: final f, entryPoint: final e) => ComposedCommand(
@@ -49,15 +55,16 @@ class CommandComposer {
           shell: _withCleanPrefix(
             cleanBeforeBuild,
             _join([
-              'flutter build ipa --release',
+              '$fl build ipa --release',
               if (f != null) '--flavor ${_q(f)}',
               if (e != null && e != 'lib/main.dart') '--target ${_q(e)}',
             ]),
+            fl: fl,
           ),
         ),
-      CleanIntent() => const ComposedCommand(
+      CleanIntent() => ComposedCommand(
           label: 'Clean + Pub get',
-          shell: 'flutter clean && flutter pub get',
+          shell: '$fl clean && $fl pub get',
         ),
       BuildRunnerIntent() => const ComposedCommand(
           label: 'build_runner',
@@ -70,8 +77,8 @@ class CommandComposer {
     };
   }
 
-  String _withCleanPrefix(bool clean, String tail) =>
-      clean ? 'flutter clean && flutter pub get && $tail' : tail;
+  String _withCleanPrefix(bool clean, String tail, {required String fl}) =>
+      clean ? '$fl clean && $fl pub get && $tail' : tail;
 
   String _join(List<String> parts) =>
       parts.where((p) => p.isNotEmpty).join(' ');

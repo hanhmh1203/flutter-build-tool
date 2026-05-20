@@ -11,7 +11,7 @@ void main() {
 
   test('explicitly bad command returns unavailable', () async {
     final result =
-        await const FlutterSdkChecker().check(executable: 'nope_xyz_123');
+        await const FlutterSdkChecker().check(flutterPath: 'nope_xyz_123');
     expect(result.available, isFalse);
     expect(result.error, isNotEmpty);
   });

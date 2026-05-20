@@ -8,12 +8,11 @@ class DeviceLister {
 
   /// Runs `flutter devices --machine` and parses the result.
   /// Returns empty list on any failure (timeout, non-zero exit, parse error).
-  Future<List<FlutterDevice>> list() async {
+  Future<List<FlutterDevice>> list({String flutterPath = 'flutter'}) async {
     try {
-      // Use login shell so Flutter is on PATH in macOS GUI apps.
       final result = await Process.run(
         '/bin/zsh',
-        ['-l', '-c', 'flutter devices --machine'],
+        ['-l', '-c', '$flutterPath devices --machine'],
       ).timeout(const Duration(seconds: 10));
       if (result.exitCode != 0) return const [];
       // Strip any non-JSON preamble from login shell (e.g. greeting messages)

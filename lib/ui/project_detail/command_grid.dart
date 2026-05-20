@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -145,10 +147,18 @@ class CommandGrid extends ConsumerWidget {
     );
   }
 
-  void _run(WidgetRef ref, CommandIntent intent, {required bool cleanBefore}) {
+  Future<void> _run(WidgetRef ref, CommandIntent intent,
+      {required bool cleanBefore}) async {
+    // Project-local FVM takes priority; fall back to globally resolved path.
+    final fvmLocal = '${project.path}/.fvm/flutter_sdk/bin/flutter';
+    final flutterPath = File(fvmLocal).existsSync()
+        ? fvmLocal
+        : await ref.read(flutterPathProvider.future);
+
     final composed = ref.read(commandComposerProvider).compose(
           intent,
           cleanBeforeBuild: cleanBefore,
+          flutterPath: flutterPath,
         );
     final controller = ref.read(projectRunnerProvider(project.id));
     controller.setLastOutputFile(null);

@@ -12,6 +12,7 @@ import '../domain/services/device_lister.dart';
 import '../domain/services/entry_point_detector.dart';
 import '../domain/services/finder_reveal.dart';
 import '../domain/services/flavor_detector.dart';
+import '../domain/services/flutter_path_resolver.dart';
 import '../domain/services/flutter_sdk_checker.dart';
 import '../domain/services/output_finder.dart';
 import '../domain/services/output_renamer.dart';
@@ -54,6 +55,15 @@ final finderRevealProvider =
     Provider<FinderReveal>((_) => const FinderReveal());
 final sdkCheckerProvider =
     Provider<FlutterSdkChecker>((_) => const FlutterSdkChecker());
+
+final flutterPathResolverProvider =
+    Provider<FlutterPathResolver>((_) => const FlutterPathResolver());
+
+/// Resolved full path to the flutter binary (e.g. '/Users/me/flutter/bin/flutter').
+/// Falls back to the bare 'flutter' string if auto-detection fails.
+final flutterPathProvider = FutureProvider<String>((ref) {
+  return ref.watch(flutterPathResolverProvider).resolve();
+});
 
 /// ScriptDetector for shell script discovery
 final scriptDetectorProvider =
@@ -108,8 +118,9 @@ final entryPointsForProjectProvider =
   return ref.watch(entryPointDetectorProvider).detect(projectPath);
 });
 
-final devicesProvider = FutureProvider<List<FlutterDevice>>((ref) {
-  return ref.watch(deviceListerProvider).list();
+final devicesProvider = FutureProvider<List<FlutterDevice>>((ref) async {
+  final flutterPath = await ref.watch(flutterPathProvider.future);
+  return ref.watch(deviceListerProvider).list(flutterPath: flutterPath);
 });
 
 final projectRunnerProvider =
@@ -121,8 +132,9 @@ final projectRunnerProvider =
   return controller;
 });
 
-final sdkStatusProvider = FutureProvider((ref) {
-  return ref.watch(sdkCheckerProvider).check();
+final sdkStatusProvider = FutureProvider((ref) async {
+  final flutterPath = await ref.watch(flutterPathProvider.future);
+  return ref.watch(sdkCheckerProvider).check(flutterPath: flutterPath);
 });
 
 /// Per-project "clean before build" toggle — reactive so toolbar rebuilds instantly.
